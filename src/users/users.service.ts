@@ -8,8 +8,6 @@ import * as bcryptjs from 'bcryptjs'
 // import { User } from './entities/user.entity';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { User } from './entities/user.entity';
-import { DateTime } from 'msnodesqlv8';
-
 @Injectable()
 export class UsersService {
 
