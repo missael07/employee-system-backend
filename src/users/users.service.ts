@@ -83,7 +83,16 @@ export class UsersService {
     throw new NotFoundException();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    const user = await this.userModel.findById(id);
+
+    if(user) {
+      user.isActive = false;
+      user.save();
+
+      return user;
+    }
+
+    throw new NotFoundException();
   }
 }
