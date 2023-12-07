@@ -16,7 +16,7 @@ export class UsersService {
   async create(createUserDto: CreateUserDto) {
 
     try {
-      const {email, name, lastName} = createUserDto;
+      const {email, name, lastName, projectId} = createUserDto;
       const currentDate = new Date()
       
       const newUser = new this.userModel({
@@ -25,12 +25,13 @@ export class UsersService {
         fullName: `${name} ${lastName}`,
         email,
         name,
-        lastName
+        lastName,
+        projectId
       });
 
       await newUser.save();
 
-      const { password:_,...user} = newUser.toJSON();
+      const { password:_,...user} = (await newUser.populate('projectId')).toJSON();
 
       return user;
       
@@ -57,12 +58,12 @@ export class UsersService {
   }
 
   async findAll(): Promise<User[]>{
-    const usersList = await this.userModel.find();
+    const usersList = await this.userModel.find().populate('projectId').exec();
     return usersList;
   }
 
   async findUserById(id: string) {
-    return await this.userModel.findById(id);
+    return await this.userModel.findById(id).populate('projectId').exec();
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {

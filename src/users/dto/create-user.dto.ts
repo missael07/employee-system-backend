@@ -7,4 +7,7 @@ export class CreateUserDto {
     name: string;
     @IsString()
     lastName: string;
+    @IsString()
+    projectId: string;
+    
 }
