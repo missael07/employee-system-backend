@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
@@ -65,8 +65,22 @@ export class UsersService {
     return await this.userModel.findById(id);
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+
+    const user = await this.userModel.findById(id);
+    
+    if(user){
+
+      user.name = updateUserDto.name;
+      user.email = updateUserDto.email;
+      user.lastName = updateUserDto.lastName;
+      user.fullName = user.name + ' ' + user.lastName;
+      user.save()
+      
+      return user;
+    }
+
+    throw new NotFoundException();
   }
 
   remove(id: number) {
