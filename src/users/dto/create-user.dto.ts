@@ -8,6 +8,8 @@ export class CreateUserDto {
     @IsString()
     lastName: string;
     @IsString()
-    projectId: string;
+    teamId?: string;
+    @IsString()
+    roleId: string;
     
 }

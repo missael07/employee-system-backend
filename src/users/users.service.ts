@@ -16,7 +16,7 @@ export class UsersService {
   async create(createUserDto: CreateUserDto) {
 
     try {
-      const {email, name, lastName, projectId} = createUserDto;
+      const {email, name, lastName, teamId, roleId} = createUserDto;
       const currentDate = new Date()
       
       const newUser = new this.userModel({
@@ -26,12 +26,22 @@ export class UsersService {
         email,
         name,
         lastName,
-        projectId
+        teamId,
+        roleId
       });
 
       await newUser.save();
 
-      const { password:_,...user} = (await newUser.populate('projectId')).toJSON();
+      const { password:_,...user} = (await newUser.populate([
+        { path: 'roleId',},
+        {
+          path: 'teamId',
+          populate: {
+            path: 'projectId',
+            model: 'Project',
+          },
+        },
+      ])).toJSON();
 
       return user;
       
@@ -58,17 +68,44 @@ export class UsersService {
   }
 
   async findAll(): Promise<User[]>{
-    const usersList = await this.userModel.find().populate('projectId').exec();
+    const usersList = await this.userModel.find().populate([
+      { path: 'roleId',},
+      {
+        path: 'teamId',
+        populate: {
+          path: 'projectId',
+          model: 'Project',
+        },
+      },
+    ]).exec();
     return usersList;
   }
 
   async findUserById(id: string) {
-    return await this.userModel.findById(id).populate('projectId').exec();
+    return await this.userModel.findById(id).populate([
+      { path: 'roleId',},
+      {
+        path: 'teamId',
+        populate: {
+          path: 'projectId',
+          model: 'Project',
+        },
+      },
+    ]).exec();
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
 
-    const user = await this.userModel.findById(id);
+    const user = await this.userModel.findById(id).populate([
+      { path: 'roleId',},
+      {
+        path: 'teamId',
+        populate: {
+          path: 'projectId',
+          model: 'Project',
+        },
+      },
+    ]);
     
     if(user){
 
@@ -85,7 +122,16 @@ export class UsersService {
   }
 
   async remove(id: string) {
-    const user = await this.userModel.findById(id);
+    const user = await this.userModel.findById(id).populate([
+      { path: 'roleId',},
+      {
+        path: 'teamId',
+        populate: {
+          path: 'projectId',
+          model: 'Project',
+        },
+      },
+    ]);
 
     if(user) {
       user.isActive = false;

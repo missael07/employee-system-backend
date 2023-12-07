@@ -25,8 +25,11 @@ export class User {
     @Prop({default: true})
     isActive: boolean;
 
-    @Prop({ type: 'ObjectId', ref: 'Project' })
-    projectId: string;
+    @Prop({ type: 'ObjectId', ref: 'Team' })
+    teamId: string;
+    
+    @Prop({ type: 'ObjectId', ref: 'Role' })
+    roleId: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
