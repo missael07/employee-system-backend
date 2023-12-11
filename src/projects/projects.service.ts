@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateProjectDto, UpdateProjectDto } from './dto';
+import { CreateProjectDto, ProjectResponse, UpdateProjectDto } from './dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Project } from './entities/project.entity';
 import { Model } from 'mongoose';
+import { FilterConfigDto } from '../shared/dto/filter';
 
 @Injectable()
 export class ProjectsService {
@@ -35,6 +36,25 @@ export class ProjectsService {
 
   async findAll() {
     return await this.projectModel.find();
+  }
+
+  async findProjectsPaginated(filterConfigDto: FilterConfigDto){
+    const { pageSize, pageIndex, sortBy, sortDirection, filterBy} = filterConfigDto;
+    const sortOptions: { [key: string]: 'asc' | 'desc' } = {};
+    sortOptions[sortBy] = sortDirection;
+
+    const query = filterBy ? { ['name']: filterBy } : {};
+
+    const [totalRows, data] =  await Promise.all([
+      this.projectModel.countDocuments(query),
+      this.projectModel.find(query).sort(sortOptions).skip(pageSize * pageIndex).limit(pageSize).exec()
+    ])
+    
+    const response = <ProjectResponse> {
+      totalRows,
+      data
+    }
+    return response;
   }
 
   async findOne(id: string) {

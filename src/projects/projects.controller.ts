@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto, UpdateProjectDto } from './dto';
+import { FilterConfigDto } from '../shared/dto/filter';
 
 @Controller('projects')
 export class ProjectsController {
@@ -29,5 +30,10 @@ export class ProjectsController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.projectsService.remove(id);
+  }
+
+  @Post('GetPaginatedProjects')
+  getPaginatedProjects(@Body() filterConfigDto: FilterConfigDto){
+    return this.projectsService.findProjectsPaginated(filterConfigDto);
   }
 }
