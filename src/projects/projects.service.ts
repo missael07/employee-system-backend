@@ -14,12 +14,13 @@ export class ProjectsService {
     try {
       const {name} = createProjectDto;
 
+      let currentDate = new Date();
       const newProject = new this.projectModel({
-        name
+        name,
+        createdAt: currentDate
       });
 
       await newProject.save();
-
       const { ...project} = newProject.toJSON();
 
       return project;
@@ -29,7 +30,7 @@ export class ProjectsService {
         throw new BadRequestException(`${ createProjectDto.name} already exists!`);
       }
       else {
-        throw new BadRequestException(`Bad request! error: ${error}` );
+        throw new BadRequestException(`Bad request! ${error}` );
       }
     }
   }
@@ -68,23 +69,31 @@ export class ProjectsService {
 
   async update(id: string, updateProjectDto: UpdateProjectDto) {
     const project = await this.projectModel.findById(id);
+    const nameExists = await this.projectModel.findOne({name: updateProjectDto.name});
     
-    if(project){
+    if( !project) throw new NotFoundException();
 
+    if( nameExists && project._id.toString() !== nameExists?._id.toString()) throw new BadRequestException(`${ updateProjectDto.name} already exists!`)
+
+    try {
+      let currentDate = new Date();
       project.name = updateProjectDto.name;
-      project.save()
-      
+      project.updatedAt = currentDate;
+      project.isActive = updateProjectDto.isActive;
+      project.save();
       return project;
+    } catch (error) {
+      throw new BadRequestException(`Bad request! ${error}` );
     }
-
-    throw new NotFoundException();
   }
 
-  async remove(id: string) {
+  async remove(id: string, statusDto: {status: boolean}) {
+
     const project = await this.projectModel.findById(id);
 
     if(project) {
-      project.isActive = false;
+      project.isActive = statusDto.status;
+      project.updatedAt = new Date();
       project.save();
 
       return project;

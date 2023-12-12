@@ -8,7 +8,13 @@ export class Project {
 
     @Prop({default: true})
     isActive: boolean;
-}
+
+    @Prop()
+    createdAt: Date
+
+    @Prop()
+    updatedAt: Date
+} 
 
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);
