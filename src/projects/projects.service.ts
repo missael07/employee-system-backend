@@ -44,7 +44,7 @@ export class ProjectsService {
     const sortOptions: { [key: string]: 'asc' | 'desc' } = {};
     sortOptions[sortBy] = sortDirection;
 
-    const query = filterBy ? { ['name']: filterBy } : {};
+    const query = filterBy ? { ['name']: { $regex: filterBy, $options: 'i' }  } : {};
 
     const [totalRows, data] =  await Promise.all([
       this.projectModel.countDocuments(query),

@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateTeamDto, UpdateTeamDto } from './dto';
+import { CreateTeamDto, UpdateTeamDto, TeamResponse } from './dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Team } from './entities/team.entity';
 import { Model } from 'mongoose';
+import { FilterConfigDto } from 'src/shared/dto/filter';
 
 @Injectable()
 export class TeamsService {
@@ -13,9 +14,11 @@ export class TeamsService {
     try {
       const {teamName, projectId} = createTeamDto;
       
+      let currentDate = new Date();
       const newTeam = new this.teamModel({
         teamName,
-        projectId
+        projectId,
+        createdAt: currentDate
       });
 
       await newTeam.save();
@@ -38,6 +41,25 @@ export class TeamsService {
     return await this.teamModel.find().populate('projectId');
   }
 
+  async findTeamsPaginated(filterConfigDto: FilterConfigDto){
+    const { pageSize, pageIndex, sortBy, sortDirection, filterBy} = filterConfigDto;
+    const sortOptions: { [key: string]: 'asc' | 'desc' } = {};
+    sortOptions[sortBy] = sortDirection;
+
+    const query = filterBy ? { ['teamName']: { $regex: filterBy, $options: 'i' }  } : {};
+
+    const [totalRows, data] =  await Promise.all([
+      this.teamModel.countDocuments(query),
+      this.teamModel.find(query).populate('projectId').sort(sortOptions).skip(pageSize * pageIndex).limit(pageSize).exec()
+    ])
+    
+    const response = <TeamResponse> {
+      totalRows,
+      data
+    }
+    return response;
+  }
+
   async findOne(id: string) {
     return await this.teamModel.findById(id).populate('projectId');
   }
@@ -46,18 +68,24 @@ export class TeamsService {
 
     const team = await this.teamModel.findById(id).populate('projectId')
     if(team){
+      let currentDate = new Date();
       team.teamName = updateTeamDto.teamName;
+      team.updatedAt = currentDate;
+      team.projectId = updateTeamDto.projectId;      
       team.save();
       return team;
     }
     return this.teamModel.find().populate('projectId');
   }
 
-  async remove(id: string) {
+  async remove(id: string, statusDto: {status: boolean}) {
 
     const team = await this.teamModel.findById(id).populate('projectId');
     if(team){
-      team.isActive = false;
+      let currentDate = new Date();
+
+      team.isActive = statusDto.status;
+      team.updatedAt = currentDate;
       team.save();
       return team;
     }

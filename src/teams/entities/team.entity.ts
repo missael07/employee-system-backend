@@ -10,8 +10,15 @@ export class Team {
     @Prop({ type: 'ObjectId', ref: 'Project' })
     projectId: string;
 
+
     @Prop({default: true})
     isActive: boolean;
+
+    @Prop()
+    createdAt: Date
+
+    @Prop()
+    updatedAt: Date
 }
 
 export const TeamSchema = SchemaFactory.createForClass(Team)
