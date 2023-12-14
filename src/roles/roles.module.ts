@@ -3,7 +3,7 @@ import { RolesService } from './roles.service';
 import { RolesController } from './roles.controller';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Role, RoleSchema } from './entities/role.entity';
+import { UsersRole, RoleSchema } from './entities/role.entity';
 
 @Module({
   controllers: [RolesController],
@@ -11,7 +11,7 @@ import { Role, RoleSchema } from './entities/role.entity';
     ConfigModule.forRoot(),
     MongooseModule.forFeature([
       {
-        name: Role.name,
+        name: UsersRole.name,
         schema: RoleSchema,
       },
     ]),
