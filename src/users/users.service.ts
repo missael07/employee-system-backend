@@ -6,8 +6,9 @@ import * as bcryptjs from 'bcryptjs'
 
 
 // import { User } from './entities/user.entity';
-import { CreateUserDto, UpdateUserDto } from './dto';
+import { CreateUserDto, UpdateUserDto, UserResponse } from './dto';
 import { User } from './entities/user.entity';
+import { FilterConfigDto } from 'src/shared/dto/filter';
 @Injectable()
 export class UsersService {
 
@@ -94,18 +95,38 @@ export class UsersService {
     ]).exec();
   }
 
+  async findUsersPaginated(filterConfigDto: FilterConfigDto){
+    const { pageSize, pageIndex, sortBy, sortDirection, filterBy} = filterConfigDto;
+    const sortOptions: { [key: string]: 'asc' | 'desc' } = {};
+    sortOptions[sortBy] = sortDirection;
+
+    const query = filterBy ? { ['fullName']: { $regex: filterBy, $options: 'i' }  } : {};
+
+    const [totalRows, data] =  await Promise.all([
+      this.userModel.countDocuments(query),
+      this.userModel.find(query).populate([
+        { path: 'roleId',},
+        {
+          path: 'teamId',
+          populate: {
+            path: 'projectId',
+            model: 'Project',
+          },
+        },
+      ]).sort(sortOptions).skip(pageSize * pageIndex).limit(pageSize).exec()
+    ])
+
+    const response = <UserResponse> {
+      totalRows,
+      data
+    }
+    return response;
+  }
+
+
   async update(id: string, updateUserDto: UpdateUserDto) {
 
-    const user = await this.userModel.findById(id).populate([
-      { path: 'roleId',},
-      {
-        path: 'teamId',
-        populate: {
-          path: 'projectId',
-          model: 'Project',
-        },
-      },
-    ]);
+    const user = await this.userModel.findById(id);
     
     if(user){
 
@@ -113,6 +134,9 @@ export class UsersService {
       user.email = updateUserDto.email;
       user.lastName = updateUserDto.lastName;
       user.fullName = user.name + ' ' + user.lastName;
+      user.roleId = updateUserDto.roleId;
+      user.teamId = updateUserDto.teamId;
+      user.isActive = updateUserDto.isActive;
       user.save()
       
       return user;
@@ -121,20 +145,11 @@ export class UsersService {
     throw new NotFoundException();
   }
 
-  async remove(id: string) {
-    const user = await this.userModel.findById(id).populate([
-      { path: 'roleId',},
-      {
-        path: 'teamId',
-        populate: {
-          path: 'projectId',
-          model: 'Project',
-        },
-      },
-    ]);
+  async remove(id: string, statusDto: {status: boolean}) {
+    const user = await this.userModel.findById(id);
 
     if(user) {
-      user.isActive = false;
+      user.isActive = statusDto.status;
       user.save();
 
       return user;

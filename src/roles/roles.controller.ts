@@ -34,7 +34,7 @@ export class RolesController {
   }
 
   @Post('GetPaginatedRoles')
-  getPaginatedProjects(@Body() filterConfigDto: FilterConfigDto){
+  getPaginatedRoles(@Body() filterConfigDto: FilterConfigDto){
     return this.rolesService.findRolesPaginated(filterConfigDto);
   }
 }

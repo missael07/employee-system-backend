@@ -36,7 +36,7 @@ export class RolesService {
   }
 
   async findAll() {
-    return await this.roleModel.find();
+    return await this.roleModel.find().select('_id roleName');
   }
 
   async findOne(id: string) {

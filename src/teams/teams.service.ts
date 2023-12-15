@@ -38,7 +38,7 @@ export class TeamsService {
   }
 
   async findAll() {
-    return await this.teamModel.find().populate('projectId');
+    return await this.teamModel.find().select('_id teamName');
   }
 
   async findTeamsPaginated(filterConfigDto: FilterConfigDto){
