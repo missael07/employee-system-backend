@@ -6,6 +6,8 @@ import { UsersModule } from './users/users.module';
 import { ProjectsModule } from './projects/projects.module';
 import { RolesModule } from './roles/roles.module';
 import { TeamsModule } from './teams/teams.module';
+import { AuthModule } from './auth/auth.module';
+import { MappingService } from './mapping/mapping.service';
 
 @Module({
   imports: [
@@ -17,8 +19,9 @@ import { TeamsModule } from './teams/teams.module';
     ProjectsModule,
     RolesModule,
     TeamsModule,
+    AuthModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [MappingService],
 })
 export class AppModule {}
